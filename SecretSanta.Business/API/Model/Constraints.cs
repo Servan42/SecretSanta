@@ -4,12 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SecretSanta.Business.API.DTOs
+namespace SecretSanta.Business.API.Model
 {
-    public class ConstraintDto
+    public class Constraints
     {
         public string CannotGiftToMemberB { get; set; }
         public string CannotReceiveFromMemberA { get; set; }
-        public bool IsViceVersa { get; set; }
     }
 }
