@@ -26,6 +26,9 @@ namespace SecretSanta.Business.API.Services
 
         public List<GiftCoupleDto> ComputeCouples(List<string> members, List<ConstraintDto> constraintsDto)
         {
+            if (members == null || members.Count < 3)
+                throw new ArgumentException("Cannot run with less than three members", nameof(members));
+
             var constraints = InitConstraints(constraintsDto);
 
             var couples = new List<GiftCoupleDto>();
@@ -64,6 +67,10 @@ namespace SecretSanta.Business.API.Services
         private List<Constraints> InitConstraints(List<ConstraintDto> constraintsDto)
         {
             var constraints = new List<Constraints>();
+            
+            if (constraintsDto == null)
+                return constraints;
+
             foreach(var constraintDto in constraintsDto)
             {
                 constraints.Add(new Constraints 

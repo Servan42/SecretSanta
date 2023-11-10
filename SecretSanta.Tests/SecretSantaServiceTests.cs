@@ -126,6 +126,18 @@ namespace SecretSanta.Tests
             Assert.That(ex.Message, Is.EqualTo("Could not find a solution. Try removing constraints or adding members."));
         }
 
+        [Test]
+        public void Should_throw_exception_when_is_given_less_than_three_members()
+        {
+            // GIVEN
+            var members = new List<string>() { "A", "B" };
+
+            // WHEN
+            var ex = Assert.Throws<ArgumentException>(() => secretSantaService_sut.ComputeCouples(members, new List<ConstraintDto>()));
+
+            Assert.That(ex.Message, Is.EqualTo("Cannot run with less than three members (Parameter 'members')"));
+        }
+
         private bool EveryoneGiftsAndEveryoneGetsAGift(List<string> members, List<GiftCoupleDto> giftCouples)
         {
             foreach(var member in members)
