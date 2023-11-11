@@ -1,11 +1,5 @@
 ﻿using SecretSanta.Business.API.DTOs;
-using SecretSanta.Business.API.Extensions;
 using SecretSanta.Business.API.Services;
-using System.Net;
-using System.Net.Mail;
-using System.Reflection.Metadata.Ecma335;
-using System.Runtime.CompilerServices;
-using System.Text;
 
 internal class Program
 {
@@ -27,7 +21,8 @@ internal class Program
 
             var constraints = new List<ConstraintDto>
             {
-
+                new ConstraintDto { CannotGiftToMemberB = "Fred", CannotReceiveFromMemberA = "Rose", IsViceVersa = true},
+                new ConstraintDto { CannotGiftToMemberB = "Patrice", CannotReceiveFromMemberA = "Eva", IsViceVersa = true}
             };
 
             foreach (var couple in service.ComputeCouples(members, constraints, true))
