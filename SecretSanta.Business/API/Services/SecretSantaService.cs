@@ -1,12 +1,15 @@
 ﻿using SecretSanta.Business.API.DTOs;
+using SecretSanta.Business.API.Extensions;
 using SecretSanta.Business.API.Interfaces;
 using SecretSanta.Business.API.Model;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace SecretSanta.Business.API.Services
 {
@@ -24,7 +27,7 @@ namespace SecretSanta.Business.API.Services
             rng = new Random(seed);
         }
 
-        public List<GiftCoupleDto> ComputeCouples(List<string> members, List<ConstraintDto> constraintsDto)
+        public List<GiftCoupleDto> ComputeCouples(List<string> members, List<ConstraintDto> constraintsDto, bool cypherWithCaesarMinusOne = false)
         {
             if (members == null || members.Count < 3)
                 throw new ArgumentException("Cannot run with less than three members", nameof(members));
@@ -61,25 +64,28 @@ namespace SecretSanta.Business.API.Services
                 }
             }
 
+            if (cypherWithCaesarMinusOne)
+                CypherWithCaesarMinusOneAndAddGarbage(couples);
+
             return couples;
         }
 
         private List<Constraints> InitConstraints(List<ConstraintDto> constraintsDto)
         {
             var constraints = new List<Constraints>();
-            
+
             if (constraintsDto == null)
                 return constraints;
 
-            foreach(var constraintDto in constraintsDto)
+            foreach (var constraintDto in constraintsDto)
             {
-                constraints.Add(new Constraints 
-                { 
-                    CannotGiftToMemberB = constraintDto.CannotGiftToMemberB, 
-                    CannotReceiveFromMemberA = constraintDto.CannotReceiveFromMemberA 
+                constraints.Add(new Constraints
+                {
+                    CannotGiftToMemberB = constraintDto.CannotGiftToMemberB,
+                    CannotReceiveFromMemberA = constraintDto.CannotReceiveFromMemberA
                 });
 
-                if(constraintDto.IsViceVersa)
+                if (constraintDto.IsViceVersa)
                 {
                     constraints.Add(new Constraints
                     {
@@ -89,6 +95,73 @@ namespace SecretSanta.Business.API.Services
                 }
             }
             return constraints;
+        }
+
+        private void CypherWithCaesarMinusOneAndAddGarbage(List<GiftCoupleDto> couples)
+        {
+            foreach (var couple in couples)
+            {
+                couple.Receiver = couple.Receiver
+                    .ToLower()
+                    .Replace('é', 'e')
+                    .Replace('è', 'e')
+                    .Replace('à', 'a')
+                    .Replace('ù', 'u')
+                    .Replace('â', 'a')
+                    .Replace('ê', 'e')
+                    .Replace('î', 'i')
+                    .Replace('ô', 'o')
+                    .Replace('û', 'u')
+                    .Replace('ä', 'a')
+                    .Replace('ë', 'e')
+                    .Replace('ï', 'i')
+                    .Replace('ö', 'o')
+                    .Replace('ü', 'u')
+                    .Replace('ÿ', 'y')
+                    .Replace('ã', 'a')
+                    .Replace('õ', 'o');
+                couple.Receiver = CaesarMinusOne(couple.Receiver);
+            }
+            int maxLength = couples.Max(x => x.Receiver.Length);
+            foreach (var couple in couples)
+            {
+                couple.Receiver = AddGarbage(couple.Receiver, maxLength);
+            }
+        }
+
+        private string AddGarbage(string receiver, int maxLength)
+        {
+            maxLength += 2;
+
+            int nbCharsToAdd = maxLength - receiver.Length;
+            int nbCharstoAddBefore = rng.Next(nbCharsToAdd + 1);
+            int nbCharsToAddAfter = nbCharsToAdd - nbCharstoAddBefore;
+
+            for (int i = 0; i < nbCharstoAddBefore; i++)
+                receiver = (char)rng.Next('a', 'z' + 1) + receiver;
+
+            for (int i = 0; i < nbCharsToAddAfter; i++)
+                receiver = receiver + (char)rng.Next('a', 'z' + 1);
+
+            return receiver;
+        }
+
+        private string CaesarMinusOne(string receiver)
+        {
+            StringBuilder cypher = new();
+            foreach (var letter in receiver)
+            {
+                if (letter < 'a' || letter > 'z')
+                    continue;
+
+                int letterFrom0 = (int)letter - (int)'a';
+                int newLetterFrom0 = letterFrom0 - 1;
+                if (newLetterFrom0 > 25 || newLetterFrom0 < 0)
+                    newLetterFrom0 = newLetterFrom0.Modulo(26);
+                int newLetter = newLetterFrom0 + (int)'a';
+                cypher.Append((char)newLetter);
+            }
+            return cypher.ToString();
         }
 
         private void Shuffle<T>(IList<T> list)

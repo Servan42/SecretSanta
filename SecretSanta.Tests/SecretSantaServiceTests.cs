@@ -138,6 +138,22 @@ namespace SecretSanta.Tests
             Assert.That(ex.Message, Is.EqualTo("Cannot run with less than three members (Parameter 'members')"));
         }
 
+        [Test]
+        public void Should_cypher_receivers_name_with_caesar_minus_one_and_add_garbage()
+        {
+            // GIVEN
+            var members = new List<string>() { "Alice", "Bob", "éèàùâêîôÔ- ûäëïöüÿãõ" };
+            secretSantaService_sut = new SecretSantaService(seed: 0);
+
+            // WHEN
+            var couples = secretSantaService_sut.ComputeCouples(members, new List<ConstraintDto>(), true);
+
+            // THEN
+            Assert.That(couples[0].Receiver, Is.EqualTo("azmqmhhzlxofoanawzri")); // garbage + ana + garbage
+            Assert.That(couples[1].Receiver, Is.EqualTo("zwddztzdhnntzdhntxzn")); // garbage + ddztzdhnntzdhntxzn + garbage
+            Assert.That(couples[2].Receiver, Is.EqualTo("zkhbdsnyrocelhzqtaji")); // garbage + zkhbd + garbage
+        }
+
         private bool EveryoneGiftsAndEveryoneGetsAGift(List<string> members, List<GiftCoupleDto> giftCouples)
         {
             foreach(var member in members)

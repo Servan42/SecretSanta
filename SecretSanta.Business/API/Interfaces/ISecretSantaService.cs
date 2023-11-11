@@ -9,6 +9,6 @@ namespace SecretSanta.Business.API.Interfaces
 {
     public interface ISecretSantaService
     {
-        public List<GiftCoupleDto> ComputeCouples(List<string> members, List<ConstraintDto> constraints);
+        public List<GiftCoupleDto> ComputeCouples(List<string> members, List<ConstraintDto> constraints, bool cypherWithCaesarMinusOne = false);
     }
 }
