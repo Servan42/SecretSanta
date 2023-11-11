@@ -34,7 +34,7 @@ namespace SecretSanta.Business.API.Services
 
             var constraints = InitConstraints(constraintsDto);
 
-            var couples = new List<GiftCoupleDto>();
+            var couplesDict = new Dictionary<string, GiftCoupleDto>();
             bool isSolutionValid = false;
             int retryCount = -1;
 
@@ -47,21 +47,28 @@ namespace SecretSanta.Business.API.Services
                 var localMembers = members.ToList();
                 Shuffle(localMembers);
                 localMembers.Add(localMembers[0]);
-                couples = new List<GiftCoupleDto>();
+                couplesDict = new();
                 for (int i = 0; i < localMembers.Count - 1; i++)
                 {
-                    couples.Add(new GiftCoupleDto() { Gifter = localMembers[i], Receiver = localMembers[i + 1] });
+                    couplesDict.Add(localMembers[i], new GiftCoupleDto() { Gifter = localMembers[i], Receiver = localMembers[i + 1] });
                 }
 
                 isSolutionValid = true;
                 foreach (var constraint in constraints)
                 {
-                    if (!couples.Any(x => x.Gifter == constraint.CannotGiftToMemberB && x.Receiver == constraint.CannotReceiveFromMemberA))
+                    if (!couplesDict.Any(x => x.Value.Gifter == constraint.CannotGiftToMemberB && x.Value.Receiver == constraint.CannotReceiveFromMemberA))
                         continue;
 
                     isSolutionValid = false;
                     break;
                 }
+            }
+
+            // Re-order from member list not to notice the cycle from reading the full list.
+            var couples = new List<GiftCoupleDto>();
+            foreach (var member in members)
+            {
+                couples.Add(couplesDict[member]);
             }
 
             if (cypherWithCaesarMinusOne)
