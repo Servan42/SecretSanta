@@ -1,12 +1,9 @@
 ﻿using SecretSanta.Business.API.DTOs;
+using SecretSanta.Infra.Files.API.DTOs;
 using SecretSanta.Infra.Files.API.Interfaces;
 using SecretSanta.Infra.Files.API.Model;
-using System;
-using System.Collections.Generic;
 using System.IO.Abstractions;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Net.Mail;
 
 namespace SecretSanta.Infra.Files.API.Services
 {
@@ -14,7 +11,8 @@ namespace SecretSanta.Infra.Files.API.Services
     {
         private readonly IFileSystem fileSystem;
 
-        private const string CONSTRAINTS_HEADERS = "CannotGiftToMemberB,CannotReceiveFromMemberA,IsViceVersa";
+        private const string CONSTRAINTS_HEADER = "CannotGiftToMemberB,CannotReceiveFromMemberA,IsViceVersa";
+        private const string MEMBERS_WITH_EMAIL_HEADER = "member,email";
 
         public FileService()
         {
@@ -28,7 +26,20 @@ namespace SecretSanta.Infra.Files.API.Services
 
         public List<string> ReadMembersFromFile(string filename)
         {
-            return this.fileSystem.File.ReadAllLines(filename).ToList();
+            var result = new List<string>();
+            string? line;
+
+            using (StreamReader sr = this.fileSystem.File.OpenText(filename))
+            {
+                while ((line = sr.ReadLine()) != null)
+                {
+                    if (string.IsNullOrEmpty(line))
+                        continue;
+
+                    result.Add(line.Trim());
+                }
+            }
+            return result;
         }
 
 
@@ -48,8 +59,8 @@ namespace SecretSanta.Infra.Files.API.Services
             using (StreamReader sr = this.fileSystem.File.OpenText(filename))
             {
                 string? headers = sr.ReadLine();
-                if (string.IsNullOrEmpty(headers) || headers != CONSTRAINTS_HEADERS)
-                    throw new FileServiceException($"{filename} was not recognized as a constraint file. It must contain CSV headers {CONSTRAINTS_HEADERS}");
+                if (string.IsNullOrEmpty(headers) || headers != CONSTRAINTS_HEADER)
+                    throw new FileServiceException($"{filename} was not recognized as a constraint file. It must contain CSV headers {CONSTRAINTS_HEADER}");
 
                 while ((line = sr.ReadLine()) != null)
                 {
@@ -71,6 +82,38 @@ namespace SecretSanta.Infra.Files.API.Services
             }
 
             return constraints;
+        }
+
+        public List<MemberWithEmailDto> ReadMembersWithEmailFromFile(string filename)
+        {
+            var memberWithEmail = new List<MemberWithEmailDto>();
+            string? line;
+
+            using (StreamReader sr = this.fileSystem.File.OpenText(filename))
+            {
+                string? headers = sr.ReadLine();
+                if (string.IsNullOrEmpty(headers) || headers != MEMBERS_WITH_EMAIL_HEADER)
+                    throw new FileServiceException($"{filename} was not recognized as a membersWithEmail file. It must contain CSV headers {MEMBERS_WITH_EMAIL_HEADER}");
+
+                while ((line = sr.ReadLine()) != null)
+                {
+                    if (string.IsNullOrEmpty(line))
+                        continue;
+
+                    var splittedLine = line.Split(',');
+
+                    if (splittedLine.Length != 2)
+                        throw new FileServiceException($"{filename} contains an unrecognized line: {line}");
+
+                    memberWithEmail.Add(new MemberWithEmailDto
+                    {
+                        Member = splittedLine[0].Trim(),
+                        Email = new MailAddress(splittedLine[1].Trim())
+                    });
+                }
+            }
+
+            return memberWithEmail;
         }
     }
 }

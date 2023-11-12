@@ -49,8 +49,9 @@ namespace SecretSanta.Tests
             // GIVEN
             this.mockFileSystem.File.WriteAllLines("memberList", new string[] 
             {
-                "A",
-                "B"
+                " A",
+                "",
+                "B "
             });
 
             // WHEN
@@ -60,6 +61,61 @@ namespace SecretSanta.Tests
             Assert.That(members.Count, Is.EqualTo(2));
             Assert.That(members[0], Is.EqualTo("A"));
             Assert.That(members[1], Is.EqualTo("B"));
+        }
+
+        [Test]
+        public void Should_read_members_with_email_from_file()
+        {
+            // GIVEN
+            this.mockFileSystem.File.WriteAllLines("membersWithEmail.csv", new string[]
+            {
+                "member,email",
+                "Alice,alice.liddell@mail.com",
+                "Bob,bob@mail.com"
+            });
+
+            // WHEN
+            var result = this.fileService_sut.ReadMembersWithEmailFromFile("membersWithEmail.csv");
+
+            // THEN
+            Assert.That(result.Count, Is.EqualTo(2));
+            Assert.That(result[0].Member, Is.EqualTo("Alice"));
+            Assert.That(result[0].Email.Address, Is.EqualTo("alice.liddell@mail.com"));
+            Assert.That(result[1].Member, Is.EqualTo("Bob"));
+            Assert.That(result[1].Email.Address, Is.EqualTo("bob@mail.com"));
+        }
+
+        [Test]
+        public void Should_throw_exception_if_not_a_members_with_email_file()
+        {
+            // GIVEN
+            this.mockFileSystem.File.WriteAllLines("membersWithEmail.csv", new string[]
+            {
+                "Alice,alice.liddell@mail.com",
+                "Bob,bob@mail.com"
+            });
+
+            // WHEN
+            var ex = Assert.Throws<FileServiceException>(() => this.fileService_sut.ReadMembersWithEmailFromFile("membersWithEmail.csv"));
+
+            Assert.That(ex.Message, Is.EqualTo("membersWithEmail.csv was not recognized as a membersWithEmail file. It must contain CSV headers member,email"));
+        }
+
+        [Test]
+        public void Should_throw_exception_if_members_with_email_file_contains_a_wrong_line()
+        {
+            // GIVEN
+            this.mockFileSystem.File.WriteAllLines("membersWithEmail.csv", new string[]
+            {
+                "member,email",
+                "Alice",
+                "Bob,bob@mail.com"
+            });
+
+            // WHEN
+            var ex = Assert.Throws<FileServiceException>(() => this.fileService_sut.ReadMembersWithEmailFromFile("membersWithEmail.csv"));
+
+            Assert.That(ex.Message, Is.EqualTo("membersWithEmail.csv contains an unrecognized line: Alice"));
         }
 
         [Test]
