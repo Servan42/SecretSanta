@@ -1,19 +1,37 @@
-﻿using SecretSanta.Business.API.DTOs;
+﻿using Microsoft.Extensions.Configuration;
+using SecretSanta.Business.API.DTOs;
+using SecretSanta.Business.API.Interfaces;
 using SecretSanta.Business.API.Services;
+using SecretSanta.Console.Config;
+using SecretSanta.Infra.Files.API.Interfaces;
 using SecretSanta.Infra.Files.API.Services;
+using SecretSanta.Infra.Mail.API.Interfaces;
+using SecretSanta.Infra.Mail.API.Services;
+using SecretSanta.Infra.Mail.SPI.Interfaces;
 
 internal class Program
 {
     private static void Main(string[] args)
     {
-        var santaService = new SecretSantaService();
-        var fileservice = new FileService();
+        IConfiguration configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: false)
+                .Build();
 
+        IMailServiceConfiguration mailServiceConfig = new MailServiceConfiguration(configuration);
+        IMailService mailService = new MailServices(mailServiceConfig);
+        ISecretSantaService santaService = new SecretSantaService();
+        IFileService fileservice = new FileService();
+
+        string membersFilePath = configuration["FileConfiguration:MembersFilePath"] ?? "";
+        string constraintsFilePath = configuration["FileConfiguration:ConstraintsFilePath"] ?? "";
+        string resultFilePath = configuration["FileConfiguration:ResultFilePath"] ?? "";
+
+        var members = fileservice.ReadMembersFromFile(membersFilePath);
+        var constraints = fileservice.ReadConstraintsFromFile(constraintsFilePath);
+        
         while (true)
         {
-            var members = fileservice.ReadMembersFromFile(@"./InputOutputFiles/memberList.txt");
-            var constraints = fileservice.ReadConstraintsFromFile(@"./InputOutputFiles/constraints.csv");
-
             var resultLines = new List<string>();
             foreach (var couple in santaService.ComputeCouples(members, constraints, true))
             {
@@ -22,7 +40,7 @@ internal class Program
                 resultLines.Add(line);
             }
 
-            fileservice.WriteLinesToFile(@"./InputOutputFiles/output.txt", resultLines);
+            fileservice.WriteLinesToFile(resultFilePath, resultLines);
 
             Console.ReadKey();
             Console.Clear();
