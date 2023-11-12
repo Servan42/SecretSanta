@@ -31,6 +31,9 @@ namespace SecretSanta.Business.API.Services
             if (members == null || members.Count < 3)
                 throw new ArgumentException("Cannot run with less than three members", nameof(members));
 
+            if(members.Distinct().Count() != members.Count)
+                throw new ArgumentException("Cannot run with a list of non-unique members", nameof(members));
+
             List<Constraints> constraints = MapConstraints(constraintsDto);
 
             var couplesDict = new Dictionary<string, GiftCouple>();

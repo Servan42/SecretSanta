@@ -139,6 +139,18 @@ namespace SecretSanta.Tests
         }
 
         [Test]
+        public void Should_throw_exception_when_is_given_a_list_of_non_unique_members()
+        {
+            // GIVEN
+            var members = new List<string>() { "A", "B", "A" };
+
+            // WHEN
+            var ex = Assert.Throws<ArgumentException>(() => secretSantaService_sut.ComputeCouples(members, new List<ConstraintDto>()));
+
+            Assert.That(ex.Message, Is.EqualTo("Cannot run with a list of non-unique members (Parameter 'members')"));
+        }
+
+        [Test]
         public void Should_cypher_receivers_name_with_caesar_minus_one_and_add_garbage()
         {
             // GIVEN
@@ -154,9 +166,10 @@ namespace SecretSanta.Tests
             Assert.That(couples[2].Receiver, Is.EqualTo("zkhbdsnyrocelhzqtaji")); // garbage + zkhbd + garbage
         }
 
+        #region Helpers
         private bool EveryoneGiftsAndEveryoneGetsAGift(List<string> members, List<GiftCoupleDto> giftCouples)
         {
-            foreach(var member in members)
+            foreach (var member in members)
             {
                 if (giftCouples.Count(x => x.Gifter == member) != 1)
                     return false;
@@ -174,6 +187,7 @@ namespace SecretSanta.Tests
                     return false;
             }
             return true;
-        }
+        } 
+        #endregion
     }
 }
