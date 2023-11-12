@@ -1,4 +1,5 @@
 ﻿using SecretSanta.Infra.Files.API.Interfaces;
+using SecretSanta.Infra.Files.API.Model;
 using SecretSanta.Infra.Files.API.Services;
 using System;
 using System.Collections.Generic;
@@ -43,28 +44,92 @@ namespace SecretSanta.Tests
         }
 
         [Test]
-        public void Should_read_lines_from_file()
+        public void Should_read_members_from_file()
         {
             // GIVEN
-            this.mockFileSystem.File.WriteAllLines("filename", new string[] 
+            this.mockFileSystem.File.WriteAllLines("memberList", new string[] 
             {
-                "line1",
-                "line2"
+                "A",
+                "B"
             });
 
             // WHEN
-            var readLines = this.fileService_sut.ReadLinesFromFile("filename");
+            var members = this.fileService_sut.ReadMembersFromFile("memberList");
 
             // THEN
-            Assert.That(readLines.Count, Is.EqualTo(2));
-            Assert.That(readLines[0], Is.EqualTo("line1"));
-            Assert.That(readLines[1], Is.EqualTo("line2"));
+            Assert.That(members.Count, Is.EqualTo(2));
+            Assert.That(members[0], Is.EqualTo("A"));
+            Assert.That(members[1], Is.EqualTo("B"));
         }
 
         [Test]
-        public void Should_throw_exception_if_file_does_not_exist_upon_reading()
+        public void Should_read_constraints_from_file()
         {
-            Assert.Throws<FileNotFoundException>(() => this.fileService_sut.ReadLinesFromFile("filename"));
+            // GIVEN
+            this.mockFileSystem.File.WriteAllLines("constraints.csv", new string[]
+            {
+                "CannotGiftToMemberB,CannotReceiveFromMemberA,IsViceVersa",
+                "A ,B,True",
+                "",
+                "C, D,false"
+            });
+
+            // WHEN
+            var constraints = this.fileService_sut.ReadConstraintsFromFile("constraints.csv");
+
+            // THEN
+            Assert.That(constraints.Count, Is.EqualTo(2));
+            Assert.That(constraints[0].CannotGiftToMemberB, Is.EqualTo("A"));
+            Assert.That(constraints[0].CannotReceiveFromMemberA, Is.EqualTo("B"));
+            Assert.That(constraints[0].IsViceVersa, Is.EqualTo(true));
+            Assert.That(constraints[1].CannotGiftToMemberB, Is.EqualTo("C"));
+            Assert.That(constraints[1].CannotReceiveFromMemberA, Is.EqualTo("D"));
+            Assert.That(constraints[1].IsViceVersa, Is.EqualTo(false));
+        }
+
+        [Test]
+        public void Should_throw_exception_if_not_a_constraits_file()
+        {
+            // GIVEN
+            this.mockFileSystem.File.WriteAllLines("constraints.csv", new string[]
+            {
+                "A,B,True",
+                "C,D,false"
+            });
+
+            // WHEN
+            var ex = Assert.Throws<FileServiceException>(() => this.fileService_sut.ReadConstraintsFromFile("constraints.csv"));
+
+            Assert.That(ex.Message, Is.EqualTo("constraints.csv was not recognized as a constraint file. It must contain CSV headers CannotGiftToMemberB,CannotReceiveFromMemberA,IsViceVersa"));
+        }
+
+        [Test]
+        public void Should_throw_exception_if_constraits_file_contains_a_wrong_line()
+        {
+            // GIVEN
+            this.mockFileSystem.File.WriteAllLines("constraints.csv", new string[]
+            {
+                "CannotGiftToMemberB,CannotReceiveFromMemberA,IsViceVersa",
+                "A,B",
+                "C,D,false"
+            });
+
+            // WHEN
+            var ex = Assert.Throws<FileServiceException>(() => this.fileService_sut.ReadConstraintsFromFile("constraints.csv"));
+
+            Assert.That(ex.Message, Is.EqualTo("constraints.csv contains an unrecognized line: A,B"));
+        }
+
+        [Test]
+        public void Should_throw_exception_if_file_does_not_exist_upon_reading_members()
+        {
+            Assert.Throws<FileNotFoundException>(() => this.fileService_sut.ReadMembersFromFile("filename"));
+        }
+
+        [Test]
+        public void Should_throw_exception_if_file_does_not_exist_upon_reading_constraints()
+        {
+            Assert.Throws<FileNotFoundException>(() => this.fileService_sut.ReadConstraintsFromFile("filename"));
         }
     }
 }

@@ -11,7 +11,9 @@ namespace SecretSanta.Business.API.Extensions
     {
         internal static bool ContainsTheConstraint(this Dictionary<string, GiftCouple> couplesDict, Constraints constraint)
         {
-            return couplesDict.Any(x => x.Value.Gifter == constraint.CannotGiftToMemberB && x.Value.Receiver == constraint.CannotReceiveFromMemberA);
+            return couplesDict.Any(
+                x => x.Value.Gifter.ToLower() == constraint.CannotGiftToMemberB.ToLower()
+                && x.Value.Receiver.ToLower() == constraint.CannotReceiveFromMemberA.ToLower());
         }
     }
 }

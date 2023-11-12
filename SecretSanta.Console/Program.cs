@@ -1,34 +1,28 @@
 ﻿using SecretSanta.Business.API.DTOs;
 using SecretSanta.Business.API.Services;
+using SecretSanta.Infra.Files.API.Services;
 
 internal class Program
 {
     private static void Main(string[] args)
     {
-        var service = new SecretSantaService();
+        var santaService = new SecretSantaService();
+        var fileservice = new FileService();
 
         while (true)
         {
-            var members = new List<string>
-            {
-                "Servan",
-                "Coline",
-                "Eva",
-                "Patrice",
-                "Fred",
-                "Rose"
-            };
+            var members = fileservice.ReadMembersFromFile(@"./InputOutputFiles/memberList.txt");
+            var constraints = fileservice.ReadConstraintsFromFile(@"./InputOutputFiles/constraints.csv");
 
-            var constraints = new List<ConstraintDto>
+            var resultLines = new List<string>();
+            foreach (var couple in santaService.ComputeCouples(members, constraints, true))
             {
-                new ConstraintDto { CannotGiftToMemberB = "Fred", CannotReceiveFromMemberA = "Rose", IsViceVersa = true},
-                new ConstraintDto { CannotGiftToMemberB = "Patrice", CannotReceiveFromMemberA = "Eva", IsViceVersa = true}
-            };
-
-            foreach (var couple in service.ComputeCouples(members, constraints, true))
-            {
-                Console.WriteLine($"{couple.Gifter} must gift to {couple.Receiver}");
+                var line = $"{couple.Gifter} must gift to {couple.Receiver}";
+                Console.WriteLine(line);
+                resultLines.Add(line);
             }
+
+            fileservice.WriteLinesToFile(@"./InputOutputFiles/output.txt", resultLines);
 
             Console.ReadKey();
             Console.Clear();

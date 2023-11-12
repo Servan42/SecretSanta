@@ -38,10 +38,10 @@ namespace SecretSanta.Tests
         {
             // GIVEN
             secretSantaService_sut = new SecretSantaService(seed: 0); // A -> B -> D -> C -> A
-            var members = new List<string>() { "A", "B", "C", "D" };
+            var members = new List<string>() { "A", "B", "c", "D" };
 
             // WHEN
-            var couples = secretSantaService_sut.ComputeCouples(members, new List<ConstraintDto> { new ConstraintDto { CannotGiftToMemberB = "D", CannotReceiveFromMemberA = "C" } });
+            var couples = secretSantaService_sut.ComputeCouples(members, new List<ConstraintDto> { new ConstraintDto { CannotGiftToMemberB = "d", CannotReceiveFromMemberA = "C" } });
 
             // THEN
             Assert.That(couples.Count, Is.EqualTo(4));
@@ -49,7 +49,7 @@ namespace SecretSanta.Tests
             Assert.That(NoOneToOneExchanges(couples), "Should not 1v1 exchange");
             Assert.That(EveryoneGiftsAndEveryoneGetsAGift(members, couples), "Everyone should gift and receive a gift");
             
-            Assert.That(couples.Any(x => x.Gifter == "D" && x.Receiver == "C"), Is.False, "D should not gift to C");
+            Assert.That(couples.Any(x => x.Gifter == "D" && x.Receiver == "c"), Is.False, "D should not gift to C");
         }
 
         [Test]

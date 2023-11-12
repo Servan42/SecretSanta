@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SecretSanta.Business.API.DTOs;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,7 +10,7 @@ namespace SecretSanta.Infra.Files.API.Interfaces
     public interface IFileService
     {
         public void WriteLinesToFile(string filename, List<string> lines);
-
-        public List<string> ReadLinesFromFile(string filename);
+        public List<ConstraintDto> ReadConstraintsFromFile(string filename);
+        public List<string> ReadMembersFromFile(string filename);
     }
 }
