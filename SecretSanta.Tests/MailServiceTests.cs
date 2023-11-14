@@ -3,6 +3,7 @@ using SecretSanta.Infra.Mail.API.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mail;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -17,12 +18,12 @@ namespace SecretSanta.Tests
             GiftCoupleWithEmail giftCoupleWithEmail_sut = new GiftCoupleWithEmail
             {
                 Gifter = "Alice",
-                GifterEmail = "alice@mail.com",
+                GifterEmail = new MailAddress("alice@mail.com"),
                 Receiver = "Bob"
             };
 
             // WHEN
-            var mailObject = giftCoupleWithEmail_sut.GetMailObject("sender@mail.com");
+            var mailObject = giftCoupleWithEmail_sut.GetMailObject(new MailAddress("sender@mail.com"));
 
             // THEN
             Assert.That(mailObject.From.Address, Is.EqualTo("sender@mail.com"));

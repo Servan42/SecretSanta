@@ -10,10 +10,10 @@ namespace SecretSanta.Infra.Mail.API.Model
     public class GiftCoupleWithEmail
     {
         public string Gifter { get; set; }
-        public string GifterEmail { get; set; }
+        public MailAddress GifterEmail { get; set; }
         public string Receiver { get; set; }
 
-        public MailMessage GetMailObject(string from)
+        public MailMessage GetMailObject(MailAddress from)
         {
             return new MailMessage(from, GifterEmail)
             {

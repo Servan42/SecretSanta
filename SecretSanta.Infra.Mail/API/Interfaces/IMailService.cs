@@ -9,6 +9,6 @@ namespace SecretSanta.Infra.Mail.API.Interfaces
 {
     public interface IMailService
     {
-        public void SendReceiverIdentityToGifterByEmail(List<GiftCoupleWithEmailDto> giftCoupleWithEmailDtos);
+        public void SendReceiverIdentityToGifterByEmail(List<GiftCoupleWithEmailDto> giftCoupleWithEmailDtos, Action<string>? externalLogging = null);
     }
 }

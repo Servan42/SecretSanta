@@ -26,9 +26,9 @@ namespace SecretSanta.Infra.Mail.API.Services
             this.mailServiceConfiguration = mailServiceConfiguration;
         }
 
-        public void SendReceiverIdentityToGifterByEmail(List<GiftCoupleWithEmailDto> giftCoupleWithEmailDtos)
+        public void SendReceiverIdentityToGifterByEmail(List<GiftCoupleWithEmailDto> giftCoupleWithEmailDtos, Action<string>? externalLogging = null)
         {
-            string from = this.mailServiceConfiguration.SmtpClientUsername;
+            var from = new MailAddress(this.mailServiceConfiguration.SmtpClientUsername);
 
             using (SmtpClient smtpClient = new SmtpClient())
             {
@@ -37,7 +37,7 @@ namespace SecretSanta.Infra.Mail.API.Services
                 smtpClient.UseDefaultCredentials = false;
                 smtpClient.Credentials = new NetworkCredential
                 {
-                    UserName = from,
+                    UserName = from.Address,
                     Password = this.mailServiceConfiguration.SmtpClientPassword
                 };
                 smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
@@ -45,9 +45,11 @@ namespace SecretSanta.Infra.Mail.API.Services
 
                 foreach (var couple in giftCoupleWithEmailDtos)
                 {
+                    if(externalLogging != null) externalLogging($"Sending email to {couple.Gifter} at {couple.GifterEmail}\n");
                     var email = this.mapper.Map<GiftCoupleWithEmail>(couple).GetMailObject(from);
                     smtpClient.Send(email);
                 }
+                if (externalLogging != null) externalLogging($"All emails were sent.\n");
             }
         }
     }

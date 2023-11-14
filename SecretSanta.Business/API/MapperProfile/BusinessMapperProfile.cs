@@ -16,7 +16,8 @@ namespace SecretSanta.Business.API.MapperProfile
         {
             CreateMap<GiftCouple, GiftCoupleDto>()
                 .ForMember(destDto => destDto.Gifter, map => map.MapFrom(src => src.Gifter))
-                .ForMember(destDto => destDto.Receiver, map => map.MapFrom(src => src.Receiver));
+                .ForMember(destDto => destDto.Receiver, map => map.MapFrom(src => src.Receiver))
+                .ForMember(destDto => destDto.CypheredReceiver, map => map.MapFrom(src => src.CypheredReceiver));
         }
     }
 }

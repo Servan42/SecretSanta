@@ -10,5 +10,6 @@ namespace SecretSanta.Business.API.DTOs
     {
         public string Gifter { get; set; }
         public string Receiver { get; set; }
+        public string CypheredReceiver { get; set; }
     }
 }

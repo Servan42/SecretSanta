@@ -26,7 +26,7 @@ namespace SecretSanta.Business.API.Services
             mapper = mapperConfig.CreateMapper();
         }
 
-        public List<GiftCoupleDto> ComputeCouples(List<string> members, List<ConstraintDto> constraintsDto, bool cypherWithCaesarMinusOne = false)
+        public List<GiftCoupleDto> ComputeCouples(List<string> members, List<ConstraintDto> constraintsDto)
         {
             if (members == null || members.Count < 3)
                 throw new ArgumentException("Cannot run with less than three members", nameof(members));
@@ -67,8 +67,7 @@ namespace SecretSanta.Business.API.Services
                 }
             }
 
-            if (cypherWithCaesarMinusOne)
-                CypherWithCaesarMinusOneAndAddGarbage(couplesDict);
+            CypherWithCaesarMinusOneAndAddGarbage(couplesDict);
 
             List<GiftCoupleDto> couples = ReorderAlongInputMemberAndMapToOutput(members, couplesDict);
 
@@ -122,14 +121,14 @@ namespace SecretSanta.Business.API.Services
         {
             foreach (var couple in couples)
             {
-                couple.Value.CleanAndLowerReceiver();
-                couple.Value.CaesarMinusOneReceiver();
+                couple.Value.CleanAndLowerReceiverToCypheredReceiver();
+                couple.Value.CaesarMinusOneCypheredReceiver();
             }
 
-            int maxLength = couples.Max(x => x.Value.Receiver.Length);
+            int maxLength = couples.Max(x => x.Value.CypheredReceiver.Length);
             foreach (var couple in couples)
             {
-                couple.Value.AddGarbageToReceiver(maxLength, this.randomNumberGenerator);
+                couple.Value.AddGarbageToCypheredReceiver(maxLength, this.randomNumberGenerator);
             }
         }
     }

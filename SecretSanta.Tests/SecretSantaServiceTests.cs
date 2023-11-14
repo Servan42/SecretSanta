@@ -158,12 +158,12 @@ namespace SecretSanta.Tests
             secretSantaService_sut = new SecretSantaService(seed: 0);
 
             // WHEN
-            var couples = secretSantaService_sut.ComputeCouples(members, new List<ConstraintDto>(), true);
+            var couples = secretSantaService_sut.ComputeCouples(members, new List<ConstraintDto>());
 
             // THEN
-            Assert.That(couples[0].Receiver, Is.EqualTo("azmqmhhzlxofoanawzri")); // garbage + ana + garbage
-            Assert.That(couples[1].Receiver, Is.EqualTo("zwddztzdhnntzdhntxzn")); // garbage + ddztzdhnntzdhntxzn + garbage
-            Assert.That(couples[2].Receiver, Is.EqualTo("zkhbdsnyrocelhzqtaji")); // garbage + zkhbd + garbage
+            Assert.That(couples[0].CypheredReceiver, Is.EqualTo("azmqmhhzlxofoanawzri")); // garbage + ana + garbage
+            Assert.That(couples[1].CypheredReceiver, Is.EqualTo("zwddztzdhnntzdhntxzn")); // garbage + ddztzdhnntzdhntxzn + garbage
+            Assert.That(couples[2].CypheredReceiver, Is.EqualTo("zkhbdsnyrocelhzqtaji")); // garbage + zkhbd + garbage
         }
 
         #region Helpers

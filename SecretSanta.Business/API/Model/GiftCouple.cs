@@ -11,10 +11,12 @@ namespace SecretSanta.Business.API.Model
     {
         public string Gifter { get; set; }
         public string Receiver { get; set; }
+        public string CypheredReceiver { get; set; }
 
-        public void CleanAndLowerReceiver()
+
+        public void CleanAndLowerReceiverToCypheredReceiver()
         {
-            this.Receiver = this.Receiver
+            this.CypheredReceiver = this.Receiver
                     .ToLower()
                     .Replace('é', 'e')
                     .Replace('è', 'e')
@@ -35,10 +37,10 @@ namespace SecretSanta.Business.API.Model
                     .Replace('õ', 'o');
         }
 
-        public void CaesarMinusOneReceiver()
+        public void CaesarMinusOneCypheredReceiver()
         {
             StringBuilder cypher = new();
-            foreach (var letter in this.Receiver)
+            foreach (var letter in this.CypheredReceiver)
             {
                 if (letter < 'a' || letter > 'z')
                     continue;
@@ -50,22 +52,22 @@ namespace SecretSanta.Business.API.Model
                 int newLetter = newLetterFrom0 + (int)'a';
                 cypher.Append((char)newLetter);
             }
-            this.Receiver = cypher.ToString();
+            this.CypheredReceiver = cypher.ToString();
         }
 
-        public void AddGarbageToReceiver(int maxLength, Random rng)
+        public void AddGarbageToCypheredReceiver(int maxLength, Random rng)
         {
             maxLength += 2;
 
-            int nbCharsToAdd = maxLength - this.Receiver.Length;
+            int nbCharsToAdd = maxLength - this.CypheredReceiver.Length;
             int nbCharstoAddBefore = rng.Next(nbCharsToAdd + 1);
             int nbCharsToAddAfter = nbCharsToAdd - nbCharstoAddBefore;
 
             for (int i = 0; i < nbCharstoAddBefore; i++)
-                this.Receiver = (char)rng.Next('a', 'z' + 1) + this.Receiver;
+                this.CypheredReceiver = (char)rng.Next('a', 'z' + 1) + this.CypheredReceiver;
 
             for (int i = 0; i < nbCharsToAddAfter; i++)
-                this.Receiver = this.Receiver + (char)rng.Next('a', 'z' + 1);
+                this.CypheredReceiver = this.CypheredReceiver + (char)rng.Next('a', 'z' + 1);
         }
     }
 }
